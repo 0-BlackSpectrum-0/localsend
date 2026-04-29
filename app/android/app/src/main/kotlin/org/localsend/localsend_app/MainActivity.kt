@@ -12,6 +12,8 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 
 private const val CHANNEL = "org.localsend.localsend_app/localsend"
@@ -39,7 +41,9 @@ class MainActivity : FlutterActivity() {
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CHANNEL
-        ).setMethodCallHandler { call, result ->
+        ).also { channel -> 
+            TransferDecisionChannel.setChannel(channel)
+        }.setMethodCallHandler { call, result ->
             when (call.method) {
                 "pickDirectory" -> {
                     pendingResult = result
@@ -70,6 +74,25 @@ class MainActivity : FlutterActivity() {
 
                 "isAnimationsEnabled" -> {
                     result.success(isAnimationsEnabled())
+                }
+
+                "startForegroundService" -> {
+                    LocalSendForegroundService.start(context)
+                    result.success(null)
+                }
+
+                "stopForegroundService" -> {
+                    LocalSendForegroundService.stop(context)
+                    result.success(null)
+                }
+
+                "showTransferDialog" -> {
+                    val sessionId = call.argument<String>("sessionId") ?: ""
+                    val senderName = call.argument<String>("senderName") ?: "Unknown"
+                    val fileCount = call.argument<Int>("fileCount") ?: 0
+                    val totalSize = call.argument<String>("totalSize") ?: ""
+                    TransferDialogActivity.launch(context, sessionId, senderName, fileCount, totalSize)
+                    result.success(null)
                 }
 
                 else -> result.notImplemented()

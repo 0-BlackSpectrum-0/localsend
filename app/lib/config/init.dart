@@ -35,6 +35,7 @@ import 'package:localsend_app/provider/tv_provider.dart';
 import 'package:localsend_app/provider/window_dimensions_provider.dart';
 import 'package:localsend_app/rust/api/logging.dart' as rust_logging;
 import 'package:localsend_app/rust/frb_generated.dart';
+import 'package:localsend_app/service/foreground_service.dart';
 import 'package:localsend_app/util/i18n.dart';
 import 'package:localsend_app/util/native/autostart_helper.dart';
 import 'package:localsend_app/util/native/cache_helper.dart';
@@ -49,6 +50,7 @@ import 'package:localsend_app/util/rhttp.dart';
 import 'package:localsend_app/util/ui/dynamic_colors.dart';
 import 'package:localsend_app/util/ui/snackbar.dart';
 import 'package:logging/logging.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:rhttp/rhttp.dart';
 import 'package:share_handler/share_handler.dart';
@@ -209,6 +211,32 @@ Future<void> postInit(BuildContext context, Ref ref, bool appStart) async {
     } catch (e) {
       _logger.warning('Setting high refresh rate failed', e);
     }
+
+    final notifStatus = await Permission.notification.request();
+    if (notifStatus.isGranted) {
+      try {
+        if (ref.read(settingsProvider).watchdogEnabled) {
+          await ForegroundService.start();
+        }
+      } catch (e) {
+        _logger.warning('Failed to start foreground service', e);
+      }
+    }
+
+    ForegroundService.listenForDecisions((sessionId, accepted) {
+      final serverNotifier = ref.notifier(serverProvider);
+      if (accepted) {
+        final session = ref.read(serverProvider)?.session;
+        if (session != null) {
+          final allFiles = {
+            for (final f in session.files.values) f.file.id: f.file.fileName,
+          };
+          serverNotifier.acceptFileRequest(allFiles);
+        }
+      } else {
+        serverNotifier.declineFileRequest();
+      }
+    });
   }
 
   try {

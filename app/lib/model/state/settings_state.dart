@@ -21,6 +21,7 @@ class SettingsState with SettingsStateMappable {
   final String? destination; // null = default
   final bool saveToGallery; // only Android, iOS
   final bool saveToHistory;
+  final bool watchdogEnabled;
   final bool quickSave; // automatically accept file requests
   final bool quickSaveFromFavorites; // automatically accept file requests from favorites
   final String? receivePin; // null = disabled
@@ -49,6 +50,7 @@ class SettingsState with SettingsStateMappable {
     required this.destination,
     required this.saveToGallery,
     required this.saveToHistory,
+    this.watchdogEnabled = false,
     required this.quickSave,
     required this.quickSaveFromFavorites,
     required this.receivePin,

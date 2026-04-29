@@ -78,6 +78,13 @@ class SettingsStateMapper extends ClassMapperBase<SettingsState> {
     'saveToHistory',
     _$saveToHistory,
   );
+  static bool _$watchdogEnabled(SettingsState v) => v.watchdogEnabled;
+  static const Field<SettingsState, bool> _f$watchdogEnabled = Field(
+    'watchdogEnabled',
+    _$watchdogEnabled,
+    opt: true,
+    def: false,
+  );
   static bool _$quickSave(SettingsState v) => v.quickSave;
   static const Field<SettingsState, bool> _f$quickSave = Field(
     'quickSave',
@@ -162,6 +169,7 @@ class SettingsStateMapper extends ClassMapperBase<SettingsState> {
     #destination: _f$destination,
     #saveToGallery: _f$saveToGallery,
     #saveToHistory: _f$saveToHistory,
+    #watchdogEnabled: _f$watchdogEnabled,
     #quickSave: _f$quickSave,
     #quickSaveFromFavorites: _f$quickSaveFromFavorites,
     #receivePin: _f$receivePin,
@@ -192,6 +200,7 @@ class SettingsStateMapper extends ClassMapperBase<SettingsState> {
       destination: data.dec(_f$destination),
       saveToGallery: data.dec(_f$saveToGallery),
       saveToHistory: data.dec(_f$saveToHistory),
+      watchdogEnabled: data.dec(_f$watchdogEnabled),
       quickSave: data.dec(_f$quickSave),
       quickSaveFromFavorites: data.dec(_f$quickSaveFromFavorites),
       receivePin: data.dec(_f$receivePin),
@@ -288,6 +297,7 @@ abstract class SettingsStateCopyWith<$R, $In extends SettingsState, $Out>
     String? destination,
     bool? saveToGallery,
     bool? saveToHistory,
+    bool? watchdogEnabled,
     bool? quickSave,
     bool? quickSaveFromFavorites,
     String? receivePin,
@@ -346,6 +356,7 @@ class _SettingsStateCopyWithImpl<$R, $Out>
     Object? destination = $none,
     bool? saveToGallery,
     bool? saveToHistory,
+    bool? watchdogEnabled,
     bool? quickSave,
     bool? quickSaveFromFavorites,
     Object? receivePin = $none,
@@ -374,6 +385,7 @@ class _SettingsStateCopyWithImpl<$R, $Out>
       if (destination != $none) #destination: destination,
       if (saveToGallery != null) #saveToGallery: saveToGallery,
       if (saveToHistory != null) #saveToHistory: saveToHistory,
+      if (watchdogEnabled != null) #watchdogEnabled: watchdogEnabled,
       if (quickSave != null) #quickSave: quickSave,
       if (quickSaveFromFavorites != null)
         #quickSaveFromFavorites: quickSaveFromFavorites,
@@ -407,6 +419,7 @@ class _SettingsStateCopyWithImpl<$R, $Out>
     destination: data.get(#destination, or: $value.destination),
     saveToGallery: data.get(#saveToGallery, or: $value.saveToGallery),
     saveToHistory: data.get(#saveToHistory, or: $value.saveToHistory),
+    watchdogEnabled: data.get(#watchdogEnabled, or: $value.watchdogEnabled),
     quickSave: data.get(#quickSave, or: $value.quickSave),
     quickSaveFromFavorites: data.get(
       #quickSaveFromFavorites,

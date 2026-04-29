@@ -38,6 +38,7 @@ import 'package:localsend_app/provider/receive_history_provider.dart';
 import 'package:localsend_app/provider/selection/selected_receiving_files_provider.dart';
 import 'package:localsend_app/provider/selection/selected_sending_files_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
+import 'package:localsend_app/service/foreground_service.dart';
 import 'package:localsend_app/util/native/directories.dart';
 import 'package:localsend_app/util/native/file_saver.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
@@ -276,6 +277,21 @@ class ReceiveController {
     } else {
       if (checkPlatformHasTray() && (await windowManager.isMinimized() || !(await windowManager.isVisible()) || !(await windowManager.isFocused()))) {
         await showFromTray();
+      }
+
+      if (checkPlatform([TargetPlatform.android])) {
+        final settings = server.ref.read(settingsProvider);
+        final isFavorite = server.ref.read(favoritesProvider).any((e) => e.fingerprint == dto.info.fingerprint);
+        if (settings.watchdogEnabled && !isFavorite) {
+          final totalBytes = dto.files.values.fold<int>(0, (sum, f) => sum + f.size);
+          final totalSize = _formatBytes(totalBytes);
+          await ForegroundService.showTransferDialog(
+            sessionId: sessionId,
+            senderName: dto.info.alias,
+            fileCount: dto.files.length,
+            totalSize: totalSize,
+          );
+        }
       }
 
       final message = server.getState().session?.message;
@@ -879,4 +895,11 @@ extension on ReceiveSessionState {
         ),
     );
   }
+}
+
+String _formatBytes(int bytes) {
+  if (bytes < 1024) return '$bytes B';
+  if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+  if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
 }

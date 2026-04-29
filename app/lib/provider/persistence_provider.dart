@@ -78,6 +78,7 @@ const _multicastGroupKey = 'ls_multicast_group';
 const _destinationKey = 'ls_destination';
 const _saveToGallery = 'ls_save_to_gallery';
 const _saveToHistory = 'ls_save_to_history';
+//const _watchdogEnabled = 'ls_watchdog_enabled';
 const _quickSave = 'ls_quick_save';
 const _quickSaveFromFavorites = 'ls_quick_save_from_favorites';
 const _receivePin = 'ls_receive_pin';
@@ -409,6 +410,14 @@ class PersistenceService {
 
   Future<void> setAdvancedSettingsEnabled(bool isEnabled) async {
     await _prefs.setBool(_advancedSettingsKey, isEnabled);
+  }
+
+  bool getWatchdogEnabled() {
+    return _prefs.getBool('watchdogEnabled') ?? false;
+  }
+
+  Future<void> setWatchdogEnabled(bool value) async {
+    await _prefs.setBool('watchdogEnabled', value);
   }
 
   bool isQuickSave() {

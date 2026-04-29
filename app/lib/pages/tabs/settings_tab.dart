@@ -16,6 +16,7 @@ import 'package:localsend_app/pages/settings/network_interfaces_page.dart';
 import 'package:localsend_app/pages/tabs/settings_tab_controller.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/provider/version_provider.dart';
+import 'package:localsend_app/service/foreground_service.dart';
 import 'package:localsend_app/util/alias_generator.dart';
 import 'package:localsend_app/util/device_type_ext.dart';
 import 'package:localsend_app/util/native/macos_channel.dart';
@@ -152,6 +153,19 @@ class SettingsTab extends StatelessWidget {
                   _SettingsSection(
                     title: t.settingsTab.receive.title,
                     children: [
+                      if (checkPlatform([TargetPlatform.android]))
+                        _BooleanEntry(
+                          label: 'Watchdog',
+                          value: vm.settings.watchdogEnabled,
+                          onChanged: (b) async {
+                            await ref.notifier(settingsProvider).setWatchdogEnabled(b);
+                            if (b) {
+                              await ForegroundService.start();
+                            } else {
+                              await ForegroundService.stop();
+                            }
+                          },
+                        ),
                       _BooleanEntry(
                         label: t.settingsTab.receive.quickSave,
                         value: vm.settings.quickSave,

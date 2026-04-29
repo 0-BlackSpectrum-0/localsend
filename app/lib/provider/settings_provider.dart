@@ -56,6 +56,7 @@ class SettingsService extends PureNotifier<SettingsState> {
     destination: _persistence.getDestination(),
     saveToGallery: _persistence.isSaveToGallery(),
     saveToHistory: _persistence.isSaveToHistory(),
+    watchdogEnabled: _persistence.getWatchdogEnabled(),
     quickSave: _persistence.isQuickSave(),
     quickSaveFromFavorites: _persistence.isQuickSaveFromFavorites(),
     receivePin: _persistence.getReceivePin(),
@@ -160,6 +161,13 @@ class SettingsService extends PureNotifier<SettingsState> {
     await _persistence.setSaveToHistory(saveToHistory);
     state = state.copyWith(
       saveToHistory: saveToHistory,
+    );
+  }
+
+  Future<void> setWatchdogEnabled(bool watchdogEnabled) async {
+    await _persistence.setWatchdogEnabled(watchdogEnabled);
+    state = state.copyWith(
+      watchdogEnabled: watchdogEnabled,
     );
   }
 
