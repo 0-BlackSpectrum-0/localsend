@@ -279,6 +279,7 @@ class ReceiveController {
         await showFromTray();
       }
 
+      final bool showedNativeDialog;
       if (checkPlatform([TargetPlatform.android])) {
         final settings = server.ref.read(settingsProvider);
         final isFavorite = server.ref.read(favoritesProvider).any((e) => e.fingerprint == dto.info.fingerprint);
@@ -291,73 +292,78 @@ class ReceiveController {
             fileCount: dto.files.length,
             totalSize: totalSize,
           );
+          showedNativeDialog = true;
+        } else {
+          showedNativeDialog = false;
         }
+      } else {
+        showedNativeDialog = false;
       }
+      if (!showedNativeDialog) {
+        final message = server.getState().session?.message;
+        if (message != null) {
+          // Message already received
+          await server.ref
+              .redux(receiveHistoryProvider)
+              .dispatchAsync(
+                AddHistoryEntryAction(
+                  entryId: const Uuid().v4(),
+                  fileName: message,
+                  fileType: FileType.text,
+                  path: null,
+                  savedToGallery: false,
+                  isMessage: true,
+                  fileSize: utf8.encode(message).length,
+                  senderAlias: server.getState().session!.senderAlias,
+                  timestamp: DateTime.now().toUtc(),
+                ),
+              );
+        }
 
-      final message = server.getState().session?.message;
-      if (message != null) {
-        // Message already received
-        await server.ref
-            .redux(receiveHistoryProvider)
-            .dispatchAsync(
-              AddHistoryEntryAction(
-                entryId: const Uuid().v4(),
-                fileName: message,
-                fileType: FileType.text,
-                path: null,
-                savedToGallery: false,
-                isMessage: true,
-                fileSize: utf8.encode(message).length,
-                senderAlias: server.getState().session!.senderAlias,
-                timestamp: DateTime.now().toUtc(),
-              ),
-            );
+        final receiveProvider = ViewProvider((ref) {
+          final session = ref.watch(serverProvider.select((state) => state?.session));
+          return ReceivePageVm(
+            status: session?.status,
+            sender: session?.sender ?? Device.empty,
+            showSenderInfo: true,
+            files: session?.files.values.map((f) => f.file).toList() ?? [],
+            message: message,
+            onAccept: () async {
+              if (message != null) {
+                // accept nothing
+                ref.notifier(serverProvider).acceptFileRequest({});
+                return;
+              }
+
+              final sessionId = ref.read(serverProvider)?.session?.sessionId;
+              if (sessionId == null) {
+                return;
+              }
+
+              final selectedFiles = ref.read(selectedReceivingFilesProvider);
+              ref.notifier(serverProvider).acceptFileRequest(selectedFiles);
+
+              await Routerino.context.pushAndRemoveUntilImmediately(
+                removeUntil: ReceivePage,
+                builder: () => ProgressPage(
+                  showAppBar: false,
+                  closeSessionOnClose: true,
+                  sessionId: sessionId,
+                ),
+              );
+            },
+            onDecline: () {
+              ref.notifier(serverProvider).declineFileRequest();
+            },
+            onClose: () {
+              ref.notifier(serverProvider).closeSession();
+            },
+          );
+        });
+
+        // ignore: use_build_context_synchronously, unawaited_futures
+        Routerino.context.push(() => ReceivePage(receiveProvider));
       }
-
-      final receiveProvider = ViewProvider((ref) {
-        final session = ref.watch(serverProvider.select((state) => state?.session));
-        return ReceivePageVm(
-          status: session?.status,
-          sender: session?.sender ?? Device.empty,
-          showSenderInfo: true,
-          files: session?.files.values.map((f) => f.file).toList() ?? [],
-          message: message,
-          onAccept: () async {
-            if (message != null) {
-              // accept nothing
-              ref.notifier(serverProvider).acceptFileRequest({});
-              return;
-            }
-
-            final sessionId = ref.read(serverProvider)?.session?.sessionId;
-            if (sessionId == null) {
-              return;
-            }
-
-            final selectedFiles = ref.read(selectedReceivingFilesProvider);
-            ref.notifier(serverProvider).acceptFileRequest(selectedFiles);
-
-            await Routerino.context.pushAndRemoveUntilImmediately(
-              removeUntil: ReceivePage,
-              builder: () => ProgressPage(
-                showAppBar: false,
-                closeSessionOnClose: true,
-                sessionId: sessionId,
-              ),
-            );
-          },
-          onDecline: () {
-            ref.notifier(serverProvider).declineFileRequest();
-          },
-          onClose: () {
-            ref.notifier(serverProvider).closeSession();
-          },
-        );
-      });
-
-      // ignore: use_build_context_synchronously, unawaited_futures
-      Routerino.context.push(() => ReceivePage(receiveProvider));
-
       // Delayed response (waiting for user's decision)
       selection = await streamController.stream.first;
     }
