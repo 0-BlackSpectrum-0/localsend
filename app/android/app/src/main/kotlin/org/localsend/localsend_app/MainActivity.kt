@@ -38,12 +38,13 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        TransferDecisionChannel.init(flutterEngine)
+        
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CHANNEL
-        ).also { channel -> 
-            TransferDecisionChannel.setChannel(channel)
-        }.setMethodCallHandler { call, result ->
+        ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "pickDirectory" -> {
                     pendingResult = result

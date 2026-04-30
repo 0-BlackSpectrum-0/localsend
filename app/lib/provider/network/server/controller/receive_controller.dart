@@ -283,7 +283,8 @@ class ReceiveController {
       if (checkPlatform([TargetPlatform.android])) {
         final settings = server.ref.read(settingsProvider);
         final isFavorite = server.ref.read(favoritesProvider).any((e) => e.fingerprint == dto.info.fingerprint);
-        if (settings.watchdogEnabled && !isFavorite) {
+        final isForegrounded = WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+        if (settings.watchdogEnabled && !isFavorite && !isForegrounded) {
           final totalBytes = dto.files.values.fold<int>(0, (sum, f) => sum + f.size);
           final totalSize = _formatBytes(totalBytes);
           await ForegroundService.showTransferDialog(

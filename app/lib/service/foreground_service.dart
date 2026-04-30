@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 class ForegroundService {
   static const _channel = MethodChannel('org.localsend.localsend_app/localsend');
 
+  static const _decisionChannel = MethodChannel('org.localsend.localsend_app/transfer_decision');
+
   static Future<void> start() async {
     await _channel.invokeMethod('startForegroundService');
   }
@@ -26,7 +28,7 @@ class ForegroundService {
   }
 
   static void listenForDecisions(void Function(String sessionId, bool accepted) onDecision) {
-    _channel.setMethodCallHandler((call) async {
+    _decisionChannel.setMethodCallHandler((call) async {
       if (call.method == 'onTransferDecision') {
         final sessionId = call.arguments['sessionId'] as String;
         final accepted = call.arguments['accepted'] as bool;
