@@ -223,34 +223,38 @@ Future<void> postInit(BuildContext context, Ref ref, bool appStart) async {
       }
     }
 
-    ForegroundService.listenForDecisions((sessionId, accepted) {
-      final serverNotifier = ref.notifier(serverProvider);
-      if (accepted) {
-        final session = ref.read(serverProvider)?.session;
-        if (session != null) {
-          final allFiles = {
-            for (final f in session.files.values) f.file.id: f.file.fileName,
-          };
-          serverNotifier.acceptFileRequest(allFiles);
+    if (appStart) {
+      ForegroundService.listenForDecisions((sessionId, accepted) {
+        final serverNotifier = ref.notifier(serverProvider);
+        if (accepted) {
+          final session = ref.read(serverProvider)?.session;
+          if (session != null) {
+            final allFiles = {
+              for (final f in session.files.values) f.file.id: f.file.fileName,
+            };
+            serverNotifier.acceptFileRequest(allFiles);
+          }
+        } else {
+          serverNotifier.declineFileRequest();
         }
-      } else {
-        serverNotifier.declineFileRequest();
-      }
-    });
+      });
+    }
   }
 
   try {
-    await ref.notifier(serverProvider).startServerFromSettings();
+    await ref.notifier(serverProvider).restartServerFromSettings();
   } catch (e) {
     if (context.mounted) {
       context.showSnackBar(e.toString());
     }
   }
 
-  try {
-    ref.redux(nearbyDevicesProvider).dispatchAsync(StartMulticastListener()); // ignore: unawaited_futures
-  } catch (e) {
-    _logger.warning('Starting multicast listener failed', e);
+  if (appStart) {
+    try {
+      ref.redux(nearbyDevicesProvider).dispatchAsync(StartMulticastListener()); // ignore: unawaited_futures
+    } catch (e) {
+      _logger.warning('Starting multicast listener failed', e);
+    }
   }
 
   ref.redux(signalingProvider).dispatch(SetupSignalingConnection());
