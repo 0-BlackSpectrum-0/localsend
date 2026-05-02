@@ -13,8 +13,10 @@ object TransferDecisionChannel {
         )
     }
 
-    fun clear() {
+    fun clear(flutterEngine: FlutterEngine) {
+        if (channel?.messenger == flutterEngine.dartExecutor.binaryMessenger){
         channel = null
+        }
     }
 
     fun send(sessionId: String, accepted: Boolean) {

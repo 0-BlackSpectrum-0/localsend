@@ -85,7 +85,7 @@ class LocalSendForegroundService: Service() {
             action = ACTION_STOP
         }
 
-        val pendingStopIntent = PendingIntent.getActivity(
+        val pendingStopIntent = PendingIntent.getService(
             this, 1, stopServiceIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

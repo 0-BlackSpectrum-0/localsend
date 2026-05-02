@@ -175,16 +175,26 @@ class ReceiveController {
 
     final deviceInfo = server.ref.read(deviceInfoProvider);
 
-    final responseDto = InfoDto(
-      alias: alias,
-      version: protocolVersion,
-      deviceModel: deviceInfo.deviceModel,
-      deviceType: deviceInfo.deviceType,
-      fingerprint: fingerprint,
-      download: server.getState().webSendState != null,
-    );
+    // final responseDto = InfoDto(
+    //   alias: alias,
+    //   version: protocolVersion,
+    //   deviceModel: deviceInfo.deviceModel,
+    //   deviceType: deviceInfo.deviceType,
+    //   fingerprint: fingerprint,
+    //   download: server.getState().webSendState != null,
+    // );
 
-    return await request.respondJson(200, body: responseDto.toJson());
+    return await request.respondJson(
+      200,
+      body: {
+        'alias': alias,
+        'version': protocolVersion,
+        'deviceModel': deviceInfo.deviceModel,
+        'deviceType': deviceInfo.deviceType.name,
+        'token': fingerprint,
+        'hasWebInterface': server.getState().webSendState != null,
+      },
+    );
   }
 
   Future<void> _prepareUploadHandler({

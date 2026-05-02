@@ -23,7 +23,9 @@ class NearbyDevicesState with NearbyDevicesStateMappable {
 
   Map<String, Device> get allDevices {
     final Map<String, Device> allDevices = {};
-    allDevices.addAll(devices);
+    for (final device in devices.values) {
+      allDevices[device.fingerprint] = device;
+    }
     for (final devices in signalingDevices.values) {
       for (final device in devices) {
         final currentDevice = allDevices[device.fingerprint];

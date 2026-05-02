@@ -226,6 +226,10 @@ Future<void> postInit(BuildContext context, Ref ref, bool appStart) async {
     if (appStart) {
       ForegroundService.listenForDecisions((sessionId, accepted) {
         final serverNotifier = ref.notifier(serverProvider);
+        final session = ref.read(serverProvider)?.session;
+
+        if (session == null || session.sessionId != sessionId) return;
+
         if (accepted) {
           final session = ref.read(serverProvider)?.session;
           if (session != null) {
