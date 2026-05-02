@@ -101,7 +101,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    override cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
         super.cleanUpFlutterEngine(flutterEngine)
         TransferDecisionChannel.clear()
     }
