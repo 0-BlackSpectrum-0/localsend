@@ -231,13 +231,10 @@ Future<void> postInit(BuildContext context, Ref ref, bool appStart) async {
         if (session == null || session.sessionId != sessionId) return;
 
         if (accepted) {
-          final session = ref.read(serverProvider)?.session;
-          if (session != null) {
-            final allFiles = {
-              for (final f in session.files.values) f.file.id: f.file.fileName,
-            };
-            serverNotifier.acceptFileRequest(allFiles);
-          }
+          final fileNameMap = {
+            for (final f in session.files.values) f.file.id: f.file.fileName,
+          };
+          serverNotifier.acceptFileRequest(fileNameMap);
         } else {
           serverNotifier.declineFileRequest();
         }
