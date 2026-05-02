@@ -128,6 +128,7 @@ class ServerService extends Notifier<ServerState?> {
       httpServer = await HttpServer.bindSecure(
         '0.0.0.0',
         port,
+        shared: true,
         SecurityContext()
           ..usePrivateKeyBytes(securityContext.privateKey.codeUnits)
           ..useCertificateChainBytes(securityContext.certificate.codeUnits),
@@ -137,6 +138,7 @@ class ServerService extends Notifier<ServerState?> {
       httpServer = await HttpServer.bind(
         '0.0.0.0',
         port,
+        shared: true,
       );
       _logger.info('Server started. (Port: $port, HTTP only)');
     }
@@ -165,6 +167,10 @@ class ServerService extends Notifier<ServerState?> {
   }
 
   Future<ServerState?> restartServerFromSettings() async {
+    if (state != null) {
+      _logger.info('Server already running, skipping restart.');
+      return state;
+    }
     await stopServer();
     return await startServerFromSettings();
   }

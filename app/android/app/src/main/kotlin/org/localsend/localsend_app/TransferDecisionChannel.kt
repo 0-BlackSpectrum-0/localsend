@@ -13,6 +13,10 @@ object TransferDecisionChannel {
         )
     }
 
+    fun clear() {
+        channel = null
+    }
+
     fun send(sessionId: String, accepted: Boolean) {
         channel?.invokeMethod(
             "onTransferDecision",

@@ -241,11 +241,15 @@ Future<void> postInit(BuildContext context, Ref ref, bool appStart) async {
     }
   }
 
-  try {
-    await ref.notifier(serverProvider).restartServerFromSettings();
-  } catch (e) {
-    if (context.mounted) {
-      context.showSnackBar(e.toString());
+  final serverState = ref.read(serverProvider);
+  final watchdogEnabled = ref.read(settingsProvider).watchdogEnabled;
+  if (serverState == null || !watchdogEnabled) {
+    try {
+      await ref.notifier(serverProvider).restartServerFromSettings();
+    } catch (e) {
+      if (context.mounted) {
+        context.showSnackBar(e.toString());
+      }
     }
   }
 

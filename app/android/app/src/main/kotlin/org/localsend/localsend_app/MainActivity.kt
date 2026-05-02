@@ -101,6 +101,11 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    override cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        super.cleanUpFlutterEngine(flutterEngine)
+        TransferDecisionChannel.clear()
+    }
+
     private fun isAnimationsEnabled() : Boolean {
         return Settings.Global.getFloat(this.getContentResolver(),
             Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f) != 0.0f;

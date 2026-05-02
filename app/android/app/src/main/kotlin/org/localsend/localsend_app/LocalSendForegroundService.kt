@@ -76,18 +76,34 @@ class LocalSendForegroundService: Service() {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
 
         }
-        val pendingIntent = PendingIntent.getActivity(
+        val pendingOpenIntent = PendingIntent.getActivity(
             this, 0, openAppIntent, 
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val stopServiceIntent = Intent(this, LocalSendForegroundService::class.java).apply {
+            action = ACTION_STOP
+        }
+
+        val pendingStopIntent = PendingIntent.getActivity(
+            this, 1, stopServiceIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("LocalSend is running")
+            .setContentTitle("Watchdog is running")
             .setContentText("Ready to receive files on your local network")
             .setSmallIcon(R.mipmap.ic_launcher_quicktile_foreground)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(pendingOpenIntent)
             .setOngoing(true)
             .setShowWhen(false)
+            .addAction(
+                Notification.Action.Builder(
+                    null,
+                    "Turn Off",
+                    pendingStopIntent
+                ).build()
+            )
             .build()
     }
 }
